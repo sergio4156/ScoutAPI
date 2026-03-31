@@ -6,6 +6,7 @@ const nextConfig = {
       "puppeteer",
       "puppeteer-extra",
       "puppeteer-extra-plugin-stealth",
+      "@prisma/client",
     ],
   },
 };

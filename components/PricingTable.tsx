@@ -1,8 +1,15 @@
+"use client";
+
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 const plans = [
   {
     name: "Starter",
     price: 49,
     calls: "10,000",
+    priceEnv: "NEXT_PUBLIC_STRIPE_PRICE_STARTER",
     features: [
       "10K API calls/month",
       "Craigslist scraping",
@@ -15,6 +22,7 @@ const plans = [
     name: "Agent",
     price: 149,
     calls: "100,000",
+    priceEnv: "NEXT_PUBLIC_STRIPE_PRICE_AGENT",
     features: [
       "100K API calls/month",
       "Craigslist + Facebook",
@@ -28,6 +36,7 @@ const plans = [
     name: "Enterprise",
     price: 499,
     calls: "500,000",
+    priceEnv: "NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE",
     features: [
       "500K API calls/month",
       "All platforms",
@@ -40,7 +49,50 @@ const plans = [
   },
 ];
 
+// Price IDs from env (exposed to client via NEXT_PUBLIC_ prefix)
+const priceIds: Record<string, string> = {
+  NEXT_PUBLIC_STRIPE_PRICE_STARTER: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER ?? "",
+  NEXT_PUBLIC_STRIPE_PRICE_AGENT: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENT ?? "",
+  NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE ?? "",
+};
+
 export default function PricingTable() {
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function handleSubscribe(priceEnv: string) {
+    if (!isSignedIn) {
+      router.push("/sign-up");
+      return;
+    }
+
+    const priceId = priceIds[priceEnv];
+    if (!priceId) {
+      alert("Pricing not configured yet. Please try again later.");
+      return;
+    }
+
+    setLoading(priceEnv);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Something went wrong");
+      }
+    } catch {
+      alert("Failed to start checkout");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <section id="pricing" className="py-12 md:py-20">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -68,7 +120,9 @@ export default function PricingTable() {
               )}
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-3xl font-extrabold md:text-4xl">${plan.price}</span>
+                <span className="text-3xl font-extrabold md:text-4xl">
+                  ${plan.price}
+                </span>
                 <span className="text-gray-500">/mo</span>
               </div>
               <p className="mt-1 text-sm text-gray-500">
@@ -95,13 +149,19 @@ export default function PricingTable() {
                 ))}
               </ul>
               <button
-                className={`mt-8 w-full rounded-lg py-3 text-sm font-semibold transition ${
+                onClick={() => handleSubscribe(plan.priceEnv)}
+                disabled={loading === plan.priceEnv}
+                className={`mt-8 w-full rounded-lg py-3 text-sm font-semibold transition disabled:opacity-50 ${
                   plan.highlighted
                     ? "bg-indigo-500 text-white hover:bg-indigo-400"
                     : "border border-gray-300 text-gray-700 hover:border-gray-400"
                 }`}
               >
-                Coming Soon
+                {loading === plan.priceEnv
+                  ? "Redirecting..."
+                  : isSignedIn
+                  ? "Subscribe"
+                  : "Get Started"}
               </button>
             </div>
           ))}
