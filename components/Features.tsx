@@ -51,12 +51,12 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="py-20">
-      <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-bold">
+    <section className="py-12 md:py-20">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <h2 className="text-center text-2xl font-bold md:text-3xl">
           Why AI Teams Choose ScoutAPI
         </h2>
-        <div className="mt-12 grid gap-8 sm:grid-cols-2">
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 md:mt-12 md:gap-8">
           {features.map((f) => (
             <div key={f.title} className="flex gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50">

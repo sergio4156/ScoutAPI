@@ -36,17 +36,17 @@ export default function CodeExample() {
 }`;
 
   return (
-    <section className="bg-gray-50 py-20">
-      <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-bold">
+    <section className="bg-gray-50 py-12 md:py-20">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <h2 className="text-center text-2xl font-bold md:text-3xl">
           Simple API, Powerful Data
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-gray-500">
+        <p className="mx-auto mt-3 max-w-xl text-center text-sm text-gray-500 md:text-base">
           One POST request returns structured JSON with listings, prices,
           locations, and images. Integrate in minutes.
         </p>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="mt-8 grid gap-6 md:mt-12 md:grid-cols-2">
           {/* Request */}
           <div>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
@@ -57,11 +57,9 @@ export default function CodeExample() {
                 <span className="h-3 w-3 rounded-full bg-red-500" />
                 <span className="h-3 w-3 rounded-full bg-yellow-500" />
                 <span className="h-3 w-3 rounded-full bg-green-500" />
-                <span className="ml-2 text-xs text-gray-400">
-                  JavaScript
-                </span>
+                <span className="ml-2 text-xs text-gray-400">JavaScript</span>
               </div>
-              <pre className="overflow-x-auto p-4 text-sm leading-relaxed text-gray-300">
+              <pre className="overflow-x-auto p-3 text-xs leading-relaxed text-gray-300 sm:p-4 sm:text-sm">
                 <code>{code}</code>
               </pre>
             </div>
@@ -79,7 +77,7 @@ export default function CodeExample() {
                 <span className="h-3 w-3 rounded-full bg-green-500" />
                 <span className="ml-2 text-xs text-gray-400">JSON</span>
               </div>
-              <pre className="overflow-x-auto p-4 text-sm leading-relaxed text-green-400">
+              <pre className="overflow-x-auto p-3 text-xs leading-relaxed text-green-400 sm:p-4 sm:text-sm">
                 <code>{response}</code>
               </pre>
             </div>

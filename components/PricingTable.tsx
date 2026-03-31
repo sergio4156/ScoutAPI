@@ -42,20 +42,20 @@ const plans = [
 
 export default function PricingTable() {
   return (
-    <section id="pricing" className="py-20">
-      <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-bold">
+    <section id="pricing" className="py-12 md:py-20">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <h2 className="text-center text-2xl font-bold md:text-3xl">
           Simple, Predictable Pricing
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-gray-500">
+        <p className="mx-auto mt-3 max-w-xl text-center text-sm text-gray-500 md:text-base">
           Pay for what you use. No hidden fees. Scale as your agents grow.
         </p>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
+        <div className="mt-8 grid gap-6 md:mt-12 md:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl border p-8 ${
+              className={`relative rounded-2xl border p-6 md:p-8 ${
                 plan.highlighted
                   ? "border-indigo-500 shadow-xl shadow-indigo-100"
                   : "border-gray-200"
@@ -68,7 +68,7 @@ export default function PricingTable() {
               )}
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold">${plan.price}</span>
+                <span className="text-3xl font-extrabold md:text-4xl">${plan.price}</span>
                 <span className="text-gray-500">/mo</span>
               </div>
               <p className="mt-1 text-sm text-gray-500">
@@ -95,7 +95,7 @@ export default function PricingTable() {
                 ))}
               </ul>
               <button
-                className={`mt-8 w-full rounded-lg py-2.5 text-sm font-semibold transition ${
+                className={`mt-8 w-full rounded-lg py-3 text-sm font-semibold transition ${
                   plan.highlighted
                     ? "bg-indigo-500 text-white hover:bg-indigo-400"
                     : "border border-gray-300 text-gray-700 hover:border-gray-400"

@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import CodeExample from "@/components/CodeExample";
 import Features from "@/components/Features";
@@ -6,6 +7,7 @@ import PricingTable from "@/components/PricingTable";
 export default function Home() {
   return (
     <main>
+      <Navbar />
       <Hero />
       <CodeExample />
       <Features />
