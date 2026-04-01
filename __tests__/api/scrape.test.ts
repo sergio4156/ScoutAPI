@@ -8,14 +8,19 @@ const mockPrisma = {
   apiRequest: { create: jest.fn() },
 };
 
-const mockScrapeCraigslist = jest.fn();
+const mockScrape = jest.fn();
 const mockCheckRateLimit = jest.fn();
 const mockGetCached = jest.fn();
 const mockSetCache = jest.fn();
 const mockHashApiKey = jest.fn((key: string) => `hashed_${key}`);
+const mockReportHealth = jest.fn();
 
 jest.mock("@/lib/db", () => ({ prisma: mockPrisma }));
-jest.mock("@/lib/scrapers/craigslist", () => ({ scrapeCraigslist: mockScrapeCraigslist }));
+jest.mock("@/lib/scrapers/index", () => ({
+  scrape: mockScrape,
+  SUPPORTED_PLATFORMS: ["craigslist", "facebook", "offerup", "mercari"],
+  reportHealth: mockReportHealth,
+}));
 jest.mock("@/lib/rateLimit", () => ({ checkRateLimit: mockCheckRateLimit }));
 jest.mock("@/lib/cache", () => ({ getCached: mockGetCached, setCache: mockSetCache }));
 jest.mock("@/lib/apiKey", () => ({ hashApiKey: mockHashApiKey }));
@@ -87,7 +92,7 @@ beforeEach(() => {
   mockPrisma.apiRequest.create.mockResolvedValue({});
   mockGetCached.mockResolvedValue(null);
   mockSetCache.mockResolvedValue(undefined);
-  mockScrapeCraigslist.mockResolvedValue(mockScrapeResult);
+  mockScrape.mockResolvedValue(mockScrapeResult);
 });
 
 describe("POST /api/scrape", () => {
@@ -199,7 +204,7 @@ describe("POST /api/scrape", () => {
       expect(data.query_time_ms).toBe(0);
       expect(res.headers.get("X-Cache")).toBe("HIT");
       // Puppeteer should NOT be called
-      expect(mockScrapeCraigslist).not.toHaveBeenCalled();
+      expect(mockScrape).not.toHaveBeenCalled();
     });
 
     it("runs scraper on cache miss and stores result", async () => {
@@ -211,7 +216,7 @@ describe("POST /api/scrape", () => {
       expect(res.status).toBe(200);
       expect(data.cached).toBe(false);
       expect(res.headers.get("X-Cache")).toBe("MISS");
-      expect(mockScrapeCraigslist).toHaveBeenCalled();
+      expect(mockScrape).toHaveBeenCalled();
       expect(mockSetCache).toHaveBeenCalledWith("craigslist", "sfbay", "iphone", mockScrapeResult);
     });
 
@@ -253,7 +258,7 @@ describe("POST /api/scrape", () => {
     });
 
     it("returns 400 for unsupported platform", async () => {
-      const req = makeRequest({ ...validBody, platform: "facebook" }, VALID_KEY);
+      const req = makeRequest({ ...validBody, platform: "ebay" }, VALID_KEY);
       const res = await POST(req);
       const data = await res.json();
 

@@ -23,7 +23,7 @@ describe("Hero Component", () => {
   });
 
   it("renders the subtitle", () => {
-    expect(screen.getByText(/Power your arbitrage bots/)).toBeInTheDocument();
+    expect(screen.getByText(/Multi-platform marketplace intelligence/)).toBeInTheDocument();
   });
 
   it("renders CTA buttons with correct links", () => {

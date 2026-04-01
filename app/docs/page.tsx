@@ -40,11 +40,20 @@ export default function DocsPage() {
       <section className="mt-8 md:mt-12">
         <h2 className="text-xl font-bold md:text-2xl">Request Format</h2>
         <div className="mt-4 overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-300 sm:text-sm md:p-4">
-          <pre>{`{
+          <pre>{`// Single platform
+{
   "platform": "craigslist",
   "query": "iphone 15",
   "location": "sfbay",
   "max_results": 50
+}
+
+// Multi-platform (results from each independently)
+{
+  "platforms": ["craigslist", "facebook", "offerup"],
+  "query": "iphone 15",
+  "location": "sfbay",
+  "max_results": 20
 }`}</pre>
         </div>
 
@@ -65,7 +74,7 @@ export default function DocsPage() {
                 <td className="py-2">string</td>
                 <td className="py-2">Yes</td>
                 <td className="py-2">
-                  Marketplace to scrape. Currently: <code className="rounded bg-gray-100 px-1 text-xs">&quot;craigslist&quot;</code>
+                  Marketplace to scrape: <code className="rounded bg-gray-100 px-1 text-xs">&quot;craigslist&quot;</code>, <code className="rounded bg-gray-100 px-1 text-xs">&quot;facebook&quot;</code>, <code className="rounded bg-gray-100 px-1 text-xs">&quot;offerup&quot;</code>, or <code className="rounded bg-gray-100 px-1 text-xs">&quot;mercari&quot;</code>
                 </td>
               </tr>
               <tr className="border-b">
@@ -244,6 +253,54 @@ response = requests.post("http://localhost:3000/api/scrape", json={
 data = response.json()
 for listing in data["results"]:
     print(f"{listing['title']} - $" + str(listing['price']))`}</pre>
+        </div>
+      </section>
+
+      {/* Supported Platforms */}
+      <section className="mt-8 md:mt-12">
+        <h2 className="text-xl font-bold md:text-2xl">Supported Platforms</h2>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left">
+                <th className="pb-2 font-semibold">Platform</th>
+                <th className="pb-2 font-semibold">Coverage</th>
+                <th className="pb-2 font-semibold">Local Pickup</th>
+                <th className="pb-2 font-semibold">Shipping</th>
+                <th className="pb-2 font-semibold">Best For</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-600">
+              <tr className="border-b">
+                <td className="py-2 font-medium">Craigslist</td>
+                <td className="py-2">Regional</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">No</td>
+                <td className="py-2">Local deals, vehicles</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 font-medium">Facebook</td>
+                <td className="py-2">Regional</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">Sometimes</td>
+                <td className="py-2">General marketplace</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 font-medium">OfferUp</td>
+                <td className="py-2">National</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">Mobile-first buyers</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 font-medium">Mercari</td>
+                <td className="py-2">National</td>
+                <td className="py-2">No</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">Shipped goods, collectibles</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 

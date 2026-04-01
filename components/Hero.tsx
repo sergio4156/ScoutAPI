@@ -14,9 +14,8 @@ export default function Hero() {
           <span className="text-indigo-400">for AI Agents</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-gray-300 sm:mt-6 sm:text-lg">
-          Power your arbitrage bots, deal finders, and market research tools
-          with fresh Craigslist &amp; Facebook Marketplace data via a simple
-          REST API.
+          Multi-platform marketplace intelligence API. Scrape Craigslist,
+          Facebook Marketplace, OfferUp, and Mercari with a single REST call.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
           <Link

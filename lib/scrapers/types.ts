@@ -1,5 +1,8 @@
+export type Platform = "craigslist" | "facebook" | "offerup" | "mercari";
+
 export interface ScrapeRequest {
-  platform: "craigslist";
+  platform?: Platform;
+  platforms?: Platform[];
   query: string;
   location: string;
   max_results?: number;
@@ -14,6 +17,7 @@ export interface Listing {
   posted: string;
   platform: string;
   image: string | null;
+  shipping?: string | null;
 }
 
 export interface ScrapeResponse {
@@ -32,3 +36,7 @@ export interface ScrapeError {
 }
 
 export type ScrapeResult = ScrapeResponse | ScrapeError;
+
+export interface MultiPlatformResult {
+  [platform: string]: ScrapeResult & { cached?: boolean };
+}
