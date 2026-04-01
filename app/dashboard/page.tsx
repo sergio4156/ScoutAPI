@@ -18,14 +18,12 @@ export default async function DashboardPage() {
   const clerkUser = await currentUser();
   const email = clerkUser?.emailAddresses[0]?.emailAddress ?? "Unknown";
 
-  // Get or create user in our DB
   const user = await prisma.user.upsert({
     where: { clerkId },
     update: { email },
     create: { clerkId, email },
   });
 
-  // Fetch subscription, API keys, usage, and recent requests
   const [subscription, apiKeys, usage, recentRequests] = await Promise.all([
     prisma.subscription.findUnique({ where: { userId: user.id } }),
     prisma.apiKey.findMany({
@@ -48,6 +46,10 @@ export default async function DashboardPage() {
   const requestCount = usage?.requestCount ?? 0;
   const usagePercent = Math.min((requestCount / planLimit) * 100, 100);
 
+  // Usage bar color based on percentage
+  const usageColor =
+    usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-yellow-500" : "bg-indigo-500";
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="border-b bg-white">
@@ -56,9 +58,7 @@ export default async function DashboardPage() {
             ScoutAPI
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="hidden text-sm text-gray-500 sm:inline">
-              {email}
-            </span>
+            <span className="hidden text-sm text-gray-500 sm:inline">{email}</span>
             <SignOutButton />
           </div>
         </div>
@@ -81,8 +81,7 @@ export default async function DashboardPage() {
               <ApiKeyDisplay keyPreview={`sk_live_...${apiKeys[0].id.slice(-6)}`} />
             ) : isActive ? (
               <p className="mt-4 rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">
-                Your API key was generated at checkout. Check your email or
-                contact support.
+                Your API key was generated at checkout. Check your email or contact support.
               </p>
             ) : (
               <p className="mt-4 rounded-lg bg-gray-100 px-3 py-3 text-center text-sm text-gray-500">
@@ -105,9 +104,18 @@ export default async function DashboardPage() {
               </div>
               <div className="mt-3 h-2 w-full rounded-full bg-gray-100">
                 <div
-                  className="h-2 rounded-full bg-indigo-500 transition-all"
+                  className={`h-2 rounded-full transition-all ${usageColor}`}
                   style={{ width: `${usagePercent}%` }}
                 />
+              </div>
+              {usagePercent >= 90 && (
+                <p className="mt-2 text-xs text-red-500">
+                  Approaching limit — consider upgrading your plan
+                </p>
+              )}
+              <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
+                <span>Rate limit: 100 req/min</span>
+                <span>Cache: 15 min TTL</span>
               </div>
             </div>
           </div>
@@ -118,9 +126,7 @@ export default async function DashboardPage() {
               Current Plan
             </h2>
             <div className="mt-4">
-              <div className="text-3xl font-extrabold capitalize">
-                {planName}
-              </div>
+              <div className="text-3xl font-extrabold capitalize">{planName}</div>
               <div className="text-sm text-gray-500">
                 {isActive
                   ? `Renews ${new Date(subscription!.currentPeriodEnd).toLocaleDateString()}`
@@ -159,9 +165,7 @@ export default async function DashboardPage() {
                 <tbody>
                   {recentRequests.map((req) => (
                     <tr key={req.id} className="border-b last:border-0">
-                      <td className="py-2 font-mono text-xs">
-                        {req.endpoint}
-                      </td>
+                      <td className="py-2 font-mono text-xs">{req.endpoint}</td>
                       <td className="py-2">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -173,9 +177,7 @@ export default async function DashboardPage() {
                           {req.statusCode}
                         </span>
                       </td>
-                      <td className="py-2 text-gray-500">
-                        {req.responseTime}ms
-                      </td>
+                      <td className="py-2 text-gray-500">{req.responseTime}ms</td>
                       <td className="py-2 text-gray-500">
                         {new Date(req.createdAt).toLocaleDateString()}
                       </td>
@@ -186,18 +188,8 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="mt-6 flex flex-col items-center justify-center py-6 text-gray-400 md:py-8">
-              <svg
-                className="h-10 w-10 md:h-12 md:w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"
-                />
+              <svg className="h-10 w-10 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
               </svg>
               <p className="mt-3 text-sm">No requests yet</p>
               <p className="mt-1 text-xs text-gray-300">
