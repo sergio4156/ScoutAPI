@@ -1,8 +1,5 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { Listing, ScrapeResult } from "./types";
-
-puppeteer.use(StealthPlugin());
+import { launchBrowser } from "./browser";
 
 // Mercari is a national marketplace — no location filtering needed
 // We accept any location but ignore it (all results are nationwide)
@@ -16,10 +13,7 @@ export async function scrapeMercari(
 
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
-    });
+    browser = await launchBrowser();
 
     const page = await browser.newPage();
     await page.setUserAgent(
