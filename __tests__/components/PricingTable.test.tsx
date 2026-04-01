@@ -48,13 +48,25 @@ describe("PricingTable Component", () => {
     const buttons = screen.getAllByText("Get Started");
     expect(buttons.length).toBe(3);
   });
+
+  it("displays plan taglines", () => {
+    expect(screen.getByText(/Perfect for testing/)).toBeInTheDocument();
+    expect(screen.getByText(/Built for production/)).toBeInTheDocument();
+    expect(screen.getByText(/high-volume automation/)).toBeInTheDocument();
+  });
+
+  it("shows excluded features for Starter plan", () => {
+    expect(screen.getByText("Webhooks")).toBeInTheDocument();
+    expect(screen.getByText("Priority support")).toBeInTheDocument();
+  });
 });
 
 describe("PricingTable - Signed In", () => {
-  it("shows 'Subscribe' when user is signed in", () => {
+  it("shows plan-specific CTAs when signed in", () => {
     mockIsSignedIn = true;
     render(<PricingTable />);
-    const buttons = screen.getAllByText("Subscribe");
-    expect(buttons.length).toBe(3);
+    expect(screen.getByText("Start with Starter")).toBeInTheDocument();
+    expect(screen.getByText("Get Agent Plan")).toBeInTheDocument();
+    expect(screen.getByText("Go Enterprise")).toBeInTheDocument();
   });
 });

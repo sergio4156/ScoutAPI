@@ -1,20 +1,25 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import ProblemSolution from "@/components/ProblemSolution";
 import CodeExample from "@/components/CodeExample";
 import Features from "@/components/Features";
+import UseCases from "@/components/UseCases";
 import PricingTable from "@/components/PricingTable";
+import FAQ from "@/components/FAQ";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
     <main>
       <Navbar />
       <Hero />
+      <ProblemSolution />
       <CodeExample />
       <Features />
+      <UseCases />
       <PricingTable />
-      <footer className="border-t border-gray-200 py-8 text-center text-sm text-gray-400">
-        &copy; {new Date().getFullYear()} ScoutAPI. All rights reserved.
-      </footer>
+      <FAQ />
+      <Footer />
     </main>
   );
 }

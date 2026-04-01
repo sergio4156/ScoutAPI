@@ -3,9 +3,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ScoutAPI - Real-time Marketplace Data for AI Agents",
+  title: "ScoutAPI - Multi-Platform Marketplace Intelligence API",
   description:
-    "Power your arbitrage bots, deal finders, and market research tools with fresh Craigslist & Facebook data.",
+    "Real-time data from Craigslist, Facebook Marketplace, OfferUp, and Mercari. Built for AI agents and automation. US nationwide coverage, 15min caching, 99.5% uptime.",
+  keywords:
+    "marketplace API, craigslist API, facebook marketplace API, offerup API, mercari API, arbitrage automation, AI agent marketplace data",
 };
 
 export default function RootLayout({

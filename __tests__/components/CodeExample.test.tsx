@@ -7,7 +7,7 @@ describe("CodeExample Component", () => {
   });
 
   it("renders section heading", () => {
-    expect(screen.getByText("Simple API, Powerful Data")).toBeInTheDocument();
+    expect(screen.getByText(/One API Call/)).toBeInTheDocument();
   });
 
   it("renders Request and Response labels", () => {
@@ -15,17 +15,13 @@ describe("CodeExample Component", () => {
     expect(screen.getByText("Response")).toBeInTheDocument();
   });
 
-  it("renders JavaScript and JSON language labels", () => {
+  it("renders language labels", () => {
     expect(screen.getByText("JavaScript")).toBeInTheDocument();
     expect(screen.getByText("JSON")).toBeInTheDocument();
   });
 
-  it("renders fetch code example", () => {
-    expect(screen.getByText(/api\.scoutapi\.dev/)).toBeInTheDocument();
-  });
-
-  it("renders JSON response example", () => {
-    expect(screen.getByText(/iPhone 15 Pro 256GB/)).toBeInTheDocument();
+  it("renders multi-platform code example", () => {
+    expect(screen.getByText(/Multi-platform search/)).toBeInTheDocument();
   });
 
   it("renders code blocks with horizontal scroll", () => {

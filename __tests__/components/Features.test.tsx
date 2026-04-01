@@ -7,25 +7,25 @@ describe("Features Component", () => {
   });
 
   it("renders section heading", () => {
-    expect(screen.getByText("Why AI Teams Choose ScoutAPI")).toBeInTheDocument();
+    expect(screen.getByText(/Everything You Need/)).toBeInTheDocument();
   });
 
-  it("renders all 4 feature titles", () => {
-    expect(screen.getByText("Built for AI Agents")).toBeInTheDocument();
-    expect(screen.getByText("Stealth Scraping")).toBeInTheDocument();
-    expect(screen.getByText("Blazing Fast")).toBeInTheDocument();
-    expect(screen.getByText("Arbitrage Ready")).toBeInTheDocument();
+  it("renders all 6 feature titles", () => {
+    expect(screen.getByText("Multi-Platform Coverage")).toBeInTheDocument();
+    expect(screen.getByText("Real-Time Data")).toBeInTheDocument();
+    expect(screen.getByText("Nationwide Reach")).toBeInTheDocument();
+    expect(screen.getByText("Fault Isolation")).toBeInTheDocument();
+    expect(screen.getByText("Built for Scale")).toBeInTheDocument();
+    expect(screen.getByText("Developer-Friendly")).toBeInTheDocument();
   });
 
   it("renders feature descriptions", () => {
-    expect(screen.getByText(/Structured JSON output/)).toBeInTheDocument();
-    expect(screen.getByText(/Puppeteer with stealth/)).toBeInTheDocument();
-    expect(screen.getByText(/under a second/)).toBeInTheDocument();
-    expect(screen.getByText(/Compare prices/)).toBeInTheDocument();
+    expect(screen.getByText(/All major US marketplaces/)).toBeInTheDocument();
+    expect(screen.getByText(/15-minute cache refresh/)).toBeInTheDocument();
   });
 
-  it("renders 4 feature icons", () => {
+  it("renders 6 feature icons", () => {
     const svgs = document.querySelectorAll("svg");
-    expect(svgs.length).toBe(4);
+    expect(svgs.length).toBe(6);
   });
 });
