@@ -1,41 +1,50 @@
 import type { Browser } from "puppeteer-core";
 
 /**
- * Launch a Puppeteer browser instance.
- * Uses @sparticuz/chromium on Vercel (serverless), regular puppeteer locally.
+ * Fetch a fully-rendered page HTML via ScraperAPI.
+ * Uses their headless Chrome + proxy infrastructure.
+ * Returns the HTML string, or null on failure.
+ */
+export async function fetchWithScraperAPI(url: string): Promise<string | null> {
+  const apiKey = process.env.SCRAPER_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const apiUrl = `https://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(url)}&render=true&country_code=us`;
+    const response = await fetch(apiUrl, { signal: AbortSignal.timeout(25000) });
+    if (!response.ok) {
+      console.error(`ScraperAPI returned ${response.status} for ${url}`);
+      return null;
+    }
+    return await response.text();
+  } catch (err) {
+    console.error("ScraperAPI fetch error:", err);
+    return null;
+  }
+}
+
+/**
+ * Check if ScraperAPI is available (key is set).
+ */
+export function hasScraperAPI(): boolean {
+  return !!process.env.SCRAPER_API_KEY;
+}
+
+/**
+ * Launch a local Puppeteer browser instance (dev only).
  */
 export async function launchBrowser(): Promise<Browser> {
-  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    console.log("Launching serverless browser...");
-    // Serverless: use puppeteer-core + @sparticuz/chromium
-    const chromiumMod = await import("@sparticuz/chromium");
-    const chromium = chromiumMod.default || chromiumMod;
-    const puppeteer = await import("puppeteer-core");
+  const puppeteerExtra = await import("puppeteer-extra");
+  const StealthPlugin = await import("puppeteer-extra-plugin-stealth");
+  puppeteerExtra.default.use(StealthPlugin.default());
 
-    console.log("Chromium args:", chromium.args);
-    const execPath = await chromium.executablePath();
-    console.log("Chromium executablePath:", execPath);
-
-    return puppeteer.default.launch({
-      args: chromium.args,
-      defaultViewport: { width: 1280, height: 900 },
-      executablePath: execPath,
-      headless: true,
-    }) as Promise<Browser>;
-  } else {
-    // Local dev: use full puppeteer with stealth
-    const puppeteerExtra = await import("puppeteer-extra");
-    const StealthPlugin = await import("puppeteer-extra-plugin-stealth");
-    puppeteerExtra.default.use(StealthPlugin.default());
-
-    return puppeteerExtra.default.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
-    }) as unknown as Promise<Browser>;
-  }
+  return puppeteerExtra.default.launch({
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
+  }) as unknown as Promise<Browser>;
 }
