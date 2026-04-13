@@ -16,7 +16,9 @@ export async function fetchWithScraperAPI(url: string): Promise<string | null> {
       console.error(`ScraperAPI returned ${response.status} for ${url}`);
       return null;
     }
-    return await response.text();
+    const html = await response.text();
+    console.log(`ScraperAPI returned ${html.length} chars for ${url.substring(0, 80)}`);
+    return html;
   } catch (err) {
     console.error("ScraperAPI fetch error:", err);
     return null;
