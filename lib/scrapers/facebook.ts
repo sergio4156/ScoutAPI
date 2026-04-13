@@ -1,88 +1,139 @@
-import * as cheerio from "cheerio";
 import { Listing, ScrapeResult } from "./types";
-import { fetchWithScraperAPI, hasScraperAPI, launchBrowser } from "./browser";
 import { FACEBOOK_LOCATION_IDS } from "../constants";
 
-function parseListings(html: string, maxResults: number): Listing[] {
-  const $ = cheerio.load(html);
-  const results: Listing[] = [];
-  const seen = new Set<string>();
+// Map our location codes to city names for RapidAPI
+const LOCATION_CITY_NAMES: Record<string, string> = {
+  sfbay: "san francisco",
+  losangeles: "los angeles",
+  newyork: "new york",
+  chicago: "chicago",
+  seattle: "seattle",
+  portland: "portland",
+  denver: "denver",
+  austin: "austin",
+  boston: "boston",
+  miami: "miami",
+  dallas: "dallas",
+  houston: "houston",
+  atlanta: "atlanta",
+  phoenix: "phoenix",
+  sandiego: "san diego",
+};
 
-  $('a[href*="/marketplace/item/"]').each((i, el) => {
-    if (results.length >= maxResults) return false;
-    const href = $(el).attr("href") || "";
-    const idMatch = href.match(/\/item\/(\d+)/);
-    const id = idMatch ? idMatch[1] : `fb-${i}`;
-    if (seen.has(id)) return;
-    seen.add(id);
-
-    const container = $(el).closest("div");
-    const img = container.find("img").first();
-    const imgAlt = img.attr("alt") || "";
-    const spans = container.find("span");
-
-    const uniqueTexts: string[] = [];
-    const seenTexts = new Set<string>();
-    spans.each((_, span) => {
-      const text = $(span).text().trim();
-      if (text && !seenTexts.has(text)) { seenTexts.add(text); uniqueTexts.push(text); }
-    });
-
-    const priceText = uniqueTexts[0] || "";
-    const title = uniqueTexts[1] || imgAlt.split(" in ")[0] || "";
-    const loc = uniqueTexts[2] || "";
-    if (!title) return;
-
-    results.push({
-      id, title,
-      price: priceText ? Number(priceText.replace(/[^0-9.]/g, "")) || null : null,
-      location: loc,
-      url: href.startsWith("http") ? href : "https://www.facebook.com" + href,
-      posted: "", platform: "facebook",
-      image: img.attr("src")?.startsWith("http") ? img.attr("src")! : null,
-    });
-  });
-
-  return results;
+interface RapidAPIListing {
+  id?: string;
+  marketplace_listing_title?: string;
+  listing_price?: {
+    formatted_amount?: string;
+    amount?: string;
+  };
+  location?: {
+    reverse_geocode?: {
+      city?: string;
+      state?: string;
+    };
+  };
+  primary_listing_photo?: {
+    image?: {
+      uri?: string;
+    };
+  };
+  creation_time?: number;
 }
 
+/**
+ * Scrape Facebook Marketplace via RapidAPI (UnitedAPI).
+ * Falls back to returning an error if RapidAPI key is not set.
+ */
 export async function scrapeFacebook(
-  query: string, location: string, maxResults: number = 50
+  query: string,
+  location: string,
+  maxResults: number = 50
 ): Promise<ScrapeResult> {
   const start = Date.now();
-  const locationId = FACEBOOK_LOCATION_IDS[location];
-  if (!locationId) {
-    return { success: false, error: { code: "INVALID_LOCATION", message: `Facebook Marketplace: invalid location "${location}". Supported: ${Object.keys(FACEBOOK_LOCATION_IDS).join(", ")}` } };
+
+  if (!FACEBOOK_LOCATION_IDS[location]) {
+    return {
+      success: false,
+      error: {
+        code: "INVALID_LOCATION",
+        message: `Facebook Marketplace: invalid location "${location}". Supported: ${Object.keys(FACEBOOK_LOCATION_IDS).join(", ")}`,
+      },
+    };
   }
 
-  const url = `https://www.facebook.com/marketplace/${locationId}/search/?query=${encodeURIComponent(query)}`;
-
-  if (hasScraperAPI()) {
-    try {
-      const html = await fetchWithScraperAPI(url);
-      if (!html) return { success: false, error: { code: "SCRAPE_FAILED", message: "Facebook Marketplace temporarily unavailable" } };
-      const listings = parseListings(html, maxResults);
-      return { success: true, results: listings, count: listings.length, query_time_ms: Date.now() - start };
-    } catch {
-      return { success: false, error: { code: "SCRAPE_FAILED", message: "Facebook Marketplace temporarily unavailable" } };
-    }
+  const apiKey = process.env.RAPIDAPI_KEY;
+  if (!apiKey) {
+    return {
+      success: false,
+      error: { code: "SCRAPE_FAILED", message: "Facebook Marketplace not configured (missing API key)" },
+    };
   }
 
-  let browser;
+  const cityName = LOCATION_CITY_NAMES[location] || location;
+
   try {
-    browser = await launchBrowser();
-    const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36");
-    await page.setViewport({ width: 1280, height: 900 });
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 15000 });
-    const html = await page.content();
-    const listings = parseListings(html, maxResults);
-    return { success: true, results: listings, count: listings.length, query_time_ms: Date.now() - start };
+    const url = `https://facebook-marketplace1.p.rapidapi.com/search?query=${encodeURIComponent(query)}&sort=newest&city=${encodeURIComponent(cityName)}&daysSinceListed=1`;
+
+    const response = await fetch(url, {
+      headers: {
+        "x-rapidapi-host": "facebook-marketplace1.p.rapidapi.com",
+        "x-rapidapi-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(20000),
+    });
+
+    if (!response.ok) {
+      console.error(`RapidAPI Facebook returned ${response.status}`);
+      return {
+        success: false,
+        error: { code: "SCRAPE_FAILED", message: "Facebook Marketplace temporarily unavailable" },
+      };
+    }
+
+    const data: RapidAPIListing[] = await response.json();
+
+    const listings: Listing[] = data
+      .slice(0, maxResults)
+      .map((item, i) => {
+        const title = item.marketplace_listing_title || "";
+        if (!title) return null;
+
+        const priceStr = item.listing_price?.amount || item.listing_price?.formatted_amount || "";
+        const price = priceStr ? Number(priceStr.replace(/[^0-9.]/g, "")) || null : null;
+
+        const city = item.location?.reverse_geocode?.city || "";
+        const state = item.location?.reverse_geocode?.state || "";
+        const loc = city && state ? `${city}, ${state}` : city || state;
+
+        const image = item.primary_listing_photo?.image?.uri || null;
+
+        return {
+          id: item.id || `fb-${i}`,
+          title,
+          price,
+          location: loc,
+          url: item.id ? `https://www.facebook.com/marketplace/item/${item.id}` : "",
+          posted: item.creation_time ? new Date(item.creation_time * 1000).toISOString() : "",
+          platform: "facebook",
+          image,
+        } as Listing;
+      })
+      .filter((item): item is Listing => item !== null);
+
+    return {
+      success: true,
+      results: listings,
+      count: listings.length,
+      query_time_ms: Date.now() - start,
+    };
   } catch (err) {
+    console.error("Facebook RapidAPI error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
-    if (message.includes("timeout")) return { success: false, error: { code: "TIMEOUT", message: "Facebook Marketplace scrape timed out" } };
+    if (message.includes("timeout") || message.includes("Timeout")) {
+      return { success: false, error: { code: "TIMEOUT", message: "Facebook Marketplace scrape timed out" } };
+    }
     return { success: false, error: { code: "SCRAPE_FAILED", message: "Facebook Marketplace temporarily unavailable" } };
-  } finally {
-    if (browser) await browser.close();
   }
 }
