@@ -1,16 +1,7 @@
 import * as cheerio from "cheerio";
 import { Listing, ScrapeResult } from "./types";
 import { fetchWithScraperAPI, hasScraperAPI, launchBrowser } from "./browser";
-
-const LOCATION_MAP: Record<string, string> = {
-  sfbay: "san-francisco-ca", losangeles: "los-angeles-ca", newyork: "new-york-ny",
-  chicago: "chicago-il", seattle: "seattle-wa", portland: "portland-or",
-  denver: "denver-co", austin: "austin-tx", boston: "boston-ma", miami: "miami-fl",
-  dallas: "dallas-tx", houston: "houston-tx", atlanta: "atlanta-ga",
-  phoenix: "phoenix-az", sandiego: "san-diego-ca", minneapolis: "minneapolis-mn",
-  detroit: "detroit-mi", philadelphia: "philadelphia-pa", washingtondc: "washington-dc",
-  orlando: "orlando-fl",
-};
+import { OFFERUP_LOCATIONS } from "../constants";
 
 function parseListings(html: string, maxResults: number): Listing[] {
   const $ = cheerio.load(html);
@@ -51,9 +42,9 @@ export async function scrapeOfferUp(
   query: string, location: string, maxResults: number = 50
 ): Promise<ScrapeResult> {
   const start = Date.now();
-  const offerUpLocation = LOCATION_MAP[location];
+  const offerUpLocation = OFFERUP_LOCATIONS[location];
   if (!offerUpLocation) {
-    return { success: false, error: { code: "INVALID_LOCATION", message: `OfferUp: invalid location "${location}". Supported: ${Object.keys(LOCATION_MAP).join(", ")}` } };
+    return { success: false, error: { code: "INVALID_LOCATION", message: `OfferUp: invalid location "${location}". Supported: ${Object.keys(OFFERUP_LOCATIONS).join(", ")}` } };
   }
 
   const url = `https://offerup.com/search/?q=${encodeURIComponent(query)}&location=${offerUpLocation}&radius=50`;

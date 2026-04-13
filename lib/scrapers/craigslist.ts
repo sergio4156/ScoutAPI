@@ -1,13 +1,7 @@
 import * as cheerio from "cheerio";
 import { Listing, ScrapeResult } from "./types";
 import { fetchWithScraperAPI, hasScraperAPI, launchBrowser } from "./browser";
-
-const VALID_LOCATIONS = [
-  "sfbay", "losangeles", "newyork", "chicago", "seattle",
-  "portland", "denver", "austin", "boston", "miami",
-  "dallas", "houston", "atlanta", "phoenix", "sandiego",
-  "minneapolis", "detroit", "philadelphia", "washingtondc", "orlando",
-];
+import { CRAIGSLIST_LOCATIONS } from "../constants";
 
 function buildSearchUrl(query: string, location: string): string {
   return `https://${location}.craigslist.org/search/sss?query=${encodeURIComponent(query)}`;
@@ -70,12 +64,12 @@ export async function scrapeCraigslist(
 ): Promise<ScrapeResult> {
   const start = Date.now();
 
-  if (!VALID_LOCATIONS.includes(location)) {
+  if (!(CRAIGSLIST_LOCATIONS as readonly string[]).includes(location)) {
     return {
       success: false,
       error: {
         code: "INVALID_LOCATION",
-        message: `Invalid location "${location}". Supported: ${VALID_LOCATIONS.join(", ")}`,
+        message: `Invalid location "${location}". Supported: ${CRAIGSLIST_LOCATIONS.join(", ")}`,
       },
     };
   }

@@ -13,7 +13,8 @@ ScoutAPI is a multi-platform marketplace intelligence API that scrapes Craigslis
 
 | Service | Provider | Purpose | Dashboard URL | Plan |
 |---------|----------|---------|---------------|------|
-| Hosting | Vercel | Website + API hosting | https://vercel.com/sergio4156-8116s-projects/scout-api | Hobby (need Pro for scrapers) |
+| Hosting | Vercel | Website + API hosting | https://vercel.com/sergio4156-8116s-projects/scout-api | Pro ($20/mo) |
+| Scraping | ScraperAPI | Proxy + headless Chrome | https://dashboard.scraperapi.com | Trial (5K free, then $49/mo) |
 | Auth | Clerk | User sign-up/sign-in/sessions | https://dashboard.clerk.com | Free (dev mode) |
 | Payments | Stripe | Subscriptions + billing | https://dashboard.stripe.com | Test mode |
 | Database | Supabase | PostgreSQL (users, keys, usage) | https://supabase.com/dashboard | Free |
@@ -107,6 +108,11 @@ All 18 env vars are stored in:
 | `UPSTASH_REDIS_REST_URL` | Upstash REST API URL |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST API token |
 
+### Scraping (ScraperAPI)
+| Variable | Description |
+|----------|-------------|
+| `SCRAPER_API_KEY` | ScraperAPI key (proxy + headless Chrome) |
+
 ---
 
 ## Stripe Configuration
@@ -132,20 +138,29 @@ All 18 env vars are stored in:
 
 ## Scraper Platforms
 
-| Platform | URL Pattern | Location Format | Notes |
-|----------|-------------|-----------------|-------|
-| Craigslist | `{location}.craigslist.org/search/sss?query=` | City code (`sfbay`, `newyork`) | Most reliable |
-| Facebook | `facebook.com/marketplace/{locationId}/search/` | Facebook location ID | Geo-targets by server IP |
-| OfferUp | `offerup.com/search/?q=&location=` | `city-state` (`san-francisco-ca`) | Lazy-loads listings |
-| Mercari | `mercari.com/search/?keyword=` | Not required (national) | Title in img alt attribute |
+| Platform | URL Pattern | Location Format | Live Status | Notes |
+|----------|-------------|-----------------|-------------|-------|
+| Craigslist | `{location}.craigslist.org/search/sss?query=` | City code (`sfbay`, `newyork`) | Working | Most reliable |
+| Facebook | `facebook.com/marketplace/{locationId}/search/` | Facebook location ID | Blocked (403) | FB blocks ScraperAPI; needs premium proxy or API |
+| OfferUp | `offerup.com/search/?q=&location=` | `city-state` (`san-francisco-ca`) | Working | |
+| Mercari | `mercari.com/search/?keyword=` | Not required (national) | Working | Title in img alt attribute |
 
 ### Scraper Architecture
-- **Local dev:** puppeteer-extra + stealth plugin (full Chrome)
-- **Production:** puppeteer-core + @sparticuz/chromium (serverless)
-- **Shared launcher:** `lib/scrapers/browser.ts` detects environment
+- **Production:** ScraperAPI (proxy + headless Chrome service) + cheerio HTML parsing
+- **Local dev:** puppeteer-extra + stealth plugin (full Chrome) + in-browser page.evaluate
+- **Shared module:** `lib/scrapers/browser.ts` — `fetchWithScraperAPI()` for production, `launchBrowser()` for dev
+- **Constants:** All location maps, timeouts, and error codes in `lib/constants.ts`
 
-### Known Limitation
-Vercel Hobby plan cannot run scrapers (10s timeout, memory limits). **Requires Vercel Pro ($20/mo)** for scraper endpoint to work in production.
+### Facebook Status
+Facebook actively blocks scraping proxy services (returns 403). Options to fix:
+1. **RapidAPI Facebook Marketplace endpoint** (~$30/mo) — pre-built API
+2. **Bright Data Scraping Browser** ($0.09/page) — residential proxy with browser
+3. **Facebook Graph API** — if Meta grants marketplace access
+
+### Environment Variable
+| Variable | Description |
+|----------|-------------|
+| `SCRAPER_API_KEY` | ScraperAPI key for production scraping |
 
 ---
 

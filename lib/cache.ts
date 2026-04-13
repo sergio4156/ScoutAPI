@@ -1,8 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { ScrapeResult } from "./scrapers/types";
-
-// Cache TTL: 15 minutes
-const CACHE_TTL = 15 * 60;
+import { CACHE } from "./constants";
 
 let redis: Redis | null = null;
 
@@ -62,7 +60,7 @@ export async function setCache(
 
   try {
     const key = buildKey(platform, location, query);
-    await r.set(key, result, { ex: CACHE_TTL });
+    await r.set(key, result, { ex: CACHE.TTL_SECONDS });
   } catch {
     // Silently fail — caching is best-effort
   }

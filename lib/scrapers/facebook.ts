@@ -1,14 +1,7 @@
 import * as cheerio from "cheerio";
 import { Listing, ScrapeResult } from "./types";
 import { fetchWithScraperAPI, hasScraperAPI, launchBrowser } from "./browser";
-
-const LOCATION_IDS: Record<string, string> = {
-  sfbay: "106377336067638", losangeles: "108424279189115", newyork: "110184922344060",
-  chicago: "108659242498155", seattle: "110843418940484", portland: "108396529193498",
-  denver: "115590031789994", austin: "113314568664060", boston: "111983945494775",
-  miami: "109714185714003", dallas: "108185579205923", houston: "102597493120498",
-  atlanta: "108331469188498", phoenix: "108296539194498", sandiego: "108080445873423",
-};
+import { FACEBOOK_LOCATION_IDS } from "../constants";
 
 function parseListings(html: string, maxResults: number): Listing[] {
   const $ = cheerio.load(html);
@@ -57,9 +50,9 @@ export async function scrapeFacebook(
   query: string, location: string, maxResults: number = 50
 ): Promise<ScrapeResult> {
   const start = Date.now();
-  const locationId = LOCATION_IDS[location];
+  const locationId = FACEBOOK_LOCATION_IDS[location];
   if (!locationId) {
-    return { success: false, error: { code: "INVALID_LOCATION", message: `Facebook Marketplace: invalid location "${location}". Supported: ${Object.keys(LOCATION_IDS).join(", ")}` } };
+    return { success: false, error: { code: "INVALID_LOCATION", message: `Facebook Marketplace: invalid location "${location}". Supported: ${Object.keys(FACEBOOK_LOCATION_IDS).join(", ")}` } };
   }
 
   const url = `https://www.facebook.com/marketplace/${locationId}/search/?query=${encodeURIComponent(query)}`;

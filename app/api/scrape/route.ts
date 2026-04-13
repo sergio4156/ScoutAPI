@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { hashApiKey } from "@/lib/apiKey";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getCached, setCache } from "@/lib/cache";
+import { ERROR_CODES, ERROR_MESSAGES, getPlanLimit } from "@/lib/constants";
 
 function errorJson(code: string, message: string, status: number) {
   return NextResponse.json(
@@ -18,20 +19,12 @@ function currentMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function getPlanLimit(plan: string): number {
-  switch (plan) {
-    case "enterprise": return 500_000;
-    case "agent": return 100_000;
-    default: return 10_000;
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     // --- Auth ---
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return errorJson("UNAUTHORIZED", "Missing API key. Pass it as: Authorization: Bearer sk_live_...", 401);
+      return errorJson(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.MISSING_API_KEY, 401);
     }
 
     const plainKey = authHeader.slice(7);
@@ -43,20 +36,20 @@ export async function POST(request: NextRequest) {
     });
 
     if (!apiKey || !apiKey.active) {
-      return errorJson("UNAUTHORIZED", "Invalid or inactive API key", 401);
+      return errorJson(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.INVALID_API_KEY, 401);
     }
 
     const user = apiKey.user;
     const subscription = user.subscription;
 
     if (!subscription || subscription.status !== "active") {
-      return errorJson("FORBIDDEN", "No active subscription. Subscribe at scoutapi.dev to get access.", 403);
+      return errorJson(ERROR_CODES.FORBIDDEN, ERROR_MESSAGES.NO_SUBSCRIPTION, 403);
     }
 
     // --- Rate limiting ---
     const rateCheck = await checkRateLimit(apiKey.id);
     if (!rateCheck.allowed) {
-      const res = errorJson("RATE_LIMITED", "Rate limit exceeded. Max 100 requests/minute.", 429);
+      const res = errorJson(ERROR_CODES.RATE_LIMITED, ERROR_MESSAGES.RATE_LIMIT_EXCEEDED, 429);
       res.headers.set("Retry-After", String(Math.ceil(rateCheck.resetMs / 1000)));
       res.headers.set("X-RateLimit-Remaining", "0");
       return res;
@@ -67,11 +60,11 @@ export async function POST(request: NextRequest) {
     const { query, location, max_results = 50 } = body;
 
     if (!query || !location) {
-      return errorJson("INVALID_REQUEST", "Missing required fields: query, location", 400);
+      return errorJson(ERROR_CODES.INVALID_REQUEST, ERROR_MESSAGES.MISSING_FIELDS, 400);
     }
 
     if (max_results < 1 || max_results > 100) {
-      return errorJson("INVALID_REQUEST", "max_results must be between 1 and 100", 400);
+      return errorJson(ERROR_CODES.INVALID_REQUEST, ERROR_MESSAGES.INVALID_MAX_RESULTS, 400);
     }
 
     // Determine which platforms to scrape
@@ -79,16 +72,16 @@ export async function POST(request: NextRequest) {
     if (body.platforms && body.platforms.length > 0) {
       const invalid = body.platforms.filter((p) => !SUPPORTED_PLATFORMS.includes(p));
       if (invalid.length > 0) {
-        return errorJson("UNSUPPORTED_PLATFORM", `Unsupported platform(s): ${invalid.join(", ")}. Available: ${SUPPORTED_PLATFORMS.join(", ")}`, 400);
+        return errorJson(ERROR_CODES.UNSUPPORTED_PLATFORM, `Unsupported platform(s): ${invalid.join(", ")}. Available: ${SUPPORTED_PLATFORMS.join(", ")}`, 400);
       }
       platforms = body.platforms;
     } else if (body.platform) {
       if (!SUPPORTED_PLATFORMS.includes(body.platform)) {
-        return errorJson("UNSUPPORTED_PLATFORM", `Platform "${body.platform}" is not supported. Available: ${SUPPORTED_PLATFORMS.join(", ")}`, 400);
+        return errorJson(ERROR_CODES.UNSUPPORTED_PLATFORM, `Platform "${body.platform}" is not supported. Available: ${SUPPORTED_PLATFORMS.join(", ")}`, 400);
       }
       platforms = [body.platform];
     } else {
-      return errorJson("INVALID_REQUEST", "Missing required field: platform (or platforms array)", 400);
+      return errorJson(ERROR_CODES.INVALID_REQUEST, ERROR_MESSAGES.MISSING_PLATFORM, 400);
     }
 
     // --- Usage check (each platform counts as 1 call) ---
@@ -102,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     if (usage.requestCount + platforms.length > usage.limit) {
       return errorJson(
-        "MONTHLY_LIMIT_EXCEEDED",
+        ERROR_CODES.MONTHLY_LIMIT_EXCEEDED,
         `Monthly limit reached (${usage.limit.toLocaleString()} calls). Upgrade your plan.`,
         429
       );
@@ -168,7 +161,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (err) {
     console.error("Scrape route error:", err);
-    return errorJson("INTERNAL_ERROR", "An unexpected error occurred", 500);
+    return errorJson(ERROR_CODES.INTERNAL_ERROR, ERROR_MESSAGES.INTERNAL_ERROR, 500);
   }
 }
 

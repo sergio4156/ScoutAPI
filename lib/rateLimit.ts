@@ -1,9 +1,9 @@
 import { RateLimiterMemory } from "rate-limiter-flexible";
+import { RATE_LIMIT } from "./constants";
 
-// 100 requests per minute per API key
 const rateLimiter = new RateLimiterMemory({
-  points: 100,
-  duration: 60, // seconds
+  points: RATE_LIMIT.MAX_REQUESTS_PER_MINUTE,
+  duration: RATE_LIMIT.WINDOW_SECONDS,
 });
 
 export interface RateLimitResult {
@@ -21,7 +21,6 @@ export async function checkRateLimit(apiKeyId: string): Promise<RateLimitResult>
       resetMs: res.msBeforeNext,
     };
   } catch (rej) {
-    // rate-limiter-flexible rejects when limit exceeded
     const res = rej as { remainingPoints: number; msBeforeNext: number };
     return {
       allowed: false,

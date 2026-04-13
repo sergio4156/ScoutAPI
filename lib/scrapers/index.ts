@@ -3,8 +3,9 @@ import { scrapeCraigslist } from "./craigslist";
 import { scrapeFacebook } from "./facebook";
 import { scrapeOfferUp } from "./offerup";
 import { scrapeMercari } from "./mercari";
+import { SUPPORTED_PLATFORM_LIST, SCRAPER, ERROR_CODES } from "../constants";
 
-export const SUPPORTED_PLATFORMS: Platform[] = ["craigslist", "facebook", "offerup", "mercari"];
+export const SUPPORTED_PLATFORMS = SUPPORTED_PLATFORM_LIST as unknown as Platform[];
 
 const scraperMap: Record<Platform, (query: string, location: string, maxResults: number) => Promise<ScrapeResult>> = {
   craigslist: scrapeCraigslist,
@@ -13,10 +14,6 @@ const scraperMap: Record<Platform, (query: string, location: string, maxResults:
   mercari: scrapeMercari,
 };
 
-/**
- * Run a scraper for the given platform. Returns a platform-specific error
- * if the platform is unsupported — never throws.
- */
 export async function scrape(
   platform: string,
   query: string,
@@ -28,13 +25,12 @@ export async function scrape(
     return {
       success: false,
       error: {
-        code: "UNSUPPORTED_PLATFORM",
+        code: ERROR_CODES.UNSUPPORTED_PLATFORM,
         message: `Platform "${platform}" is not supported. Available: ${SUPPORTED_PLATFORMS.join(", ")}`,
       },
     };
   }
 
-  // Wrap in a 30-second timeout so no single scraper can hang the request
   return Promise.race([
     fn(query, location, maxResults),
     new Promise<ScrapeResult>((resolve) =>
@@ -42,9 +38,9 @@ export async function scrape(
         () =>
           resolve({
             success: false,
-            error: { code: "TIMEOUT", message: `${platform} scrape timed out after 30s` },
+            error: { code: ERROR_CODES.TIMEOUT, message: `${platform} scrape timed out after ${SCRAPER.PLATFORM_TIMEOUT_MS / 1000}s` },
           }),
-        30000
+        SCRAPER.PLATFORM_TIMEOUT_MS
       )
     ),
   ]);
