@@ -166,7 +166,8 @@ export async function POST(request: NextRequest) {
       { success: true, results },
       { headers: { "X-RateLimit-Remaining": String(rateCheck.remaining) } }
     );
-  } catch {
+  } catch (err) {
+    console.error("Scrape route error:", err);
     return errorJson("INTERNAL_ERROR", "An unexpected error occurred", 500);
   }
 }
