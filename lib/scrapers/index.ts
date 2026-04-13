@@ -34,7 +34,7 @@ export async function scrape(
     };
   }
 
-  // Wrap in a 15-second timeout so no single scraper can hang the request
+  // Wrap in a 30-second timeout so no single scraper can hang the request
   return Promise.race([
     fn(query, location, maxResults),
     new Promise<ScrapeResult>((resolve) =>
@@ -42,9 +42,9 @@ export async function scrape(
         () =>
           resolve({
             success: false,
-            error: { code: "TIMEOUT", message: `${platform} scrape timed out after 15s` },
+            error: { code: "TIMEOUT", message: `${platform} scrape timed out after 30s` },
           }),
-        15000
+        30000
       )
     ),
   ]);
