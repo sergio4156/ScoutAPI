@@ -7,13 +7,13 @@ import type { Browser } from "puppeteer-core";
 export async function launchBrowser(): Promise<Browser> {
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
     // Serverless: use puppeteer-core + @sparticuz/chromium
-    const chromium = await import("@sparticuz/chromium");
+    const chromium = (await import("@sparticuz/chromium")).default || (await import("@sparticuz/chromium"));
     const puppeteer = await import("puppeteer-core");
 
     return puppeteer.default.launch({
-      args: chromium.default.args,
+      args: chromium.args,
       defaultViewport: { width: 1280, height: 900 },
-      executablePath: await chromium.default.executablePath(),
+      executablePath: await chromium.executablePath(),
       headless: true,
     }) as Promise<Browser>;
   } else {
