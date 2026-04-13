@@ -1,4 +1,10 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "functions": {
+    "app/api/scrape/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  }
 }
