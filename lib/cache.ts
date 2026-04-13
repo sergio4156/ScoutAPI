@@ -11,8 +11,13 @@ function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
-  redis = new Redis({ url, token });
-  return redis;
+  try {
+    redis = new Redis({ url, token });
+    return redis;
+  } catch (err) {
+    console.error("Redis init failed:", err);
+    return null;
+  }
 }
 
 /**
