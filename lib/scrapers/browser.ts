@@ -10,8 +10,8 @@ export async function fetchWithScraperAPI(url: string): Promise<string | null> {
   if (!apiKey) return null;
 
   try {
-    const apiUrl = `https://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(url)}&render=true&country_code=us`;
-    const response = await fetch(apiUrl, { signal: AbortSignal.timeout(25000) });
+    const apiUrl = `https://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(url)}&render=true&country_code=us&wait_for_selector=a`;
+    const response = await fetch(apiUrl, { signal: AbortSignal.timeout(45000) });
     if (!response.ok) {
       console.error(`ScraperAPI returned ${response.status} for ${url}`);
       return null;

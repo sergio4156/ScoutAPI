@@ -17,28 +17,48 @@ function parseListings(html: string, maxResults: number): Listing[] {
   const $ = cheerio.load(html);
   const results: Listing[] = [];
 
-  $(".cl-static-search-result").each((i, el) => {
-    if (results.length >= maxResults) return false;
-    const $el = $(el);
-    const title = $el.find(".title").text().trim();
-    if (!title) return;
+  // Try JS-rendered results first, then static fallback
+  const jsResults = $(".cl-search-result");
+  const staticResults = $(".cl-static-search-result");
 
-    const priceText = $el.find(".price").text().trim();
-    const location = $el.find(".location").text().trim();
-    const href = $el.find("a").attr("href") || "";
-    const idMatch = href.match(/\/(\d+)\.html/);
+  if (jsResults.length > 0) {
+    jsResults.each((i, el) => {
+      if (results.length >= maxResults) return false;
+      const $el = $(el);
+      const title = $el.find(".posting-title .label").text().trim();
+      if (!title) return;
+      const priceText = $el.find(".priceinfo").text().trim();
+      const loc = $el.find(".result-location").text().trim();
+      const href = $el.find("a.posting-title").attr("href") || "";
+      const postId = $el.attr("data-pid") || href.match(/\/(\d+)\.html/)?.[1] || `cl-${i}`;
+      const posted = $el.find(".result-posted-date").text().trim();
+      const imgSrc = $el.find("img[data-image-index]").attr("src") || null;
 
-    results.push({
-      id: idMatch ? idMatch[1] : `cl-${i}`,
-      title,
-      price: priceText ? Number(priceText.replace(/[$,]/g, "")) || null : null,
-      location,
-      url: href,
-      posted: "",
-      platform: "craigslist",
-      image: null,
+      results.push({
+        id: postId, title,
+        price: priceText ? Number(priceText.replace(/[$,]/g, "")) || null : null,
+        location: loc, url: href, posted, platform: "craigslist",
+        image: imgSrc?.startsWith("http") ? imgSrc : null,
+      });
     });
-  });
+  } else {
+    staticResults.each((i, el) => {
+      if (results.length >= maxResults) return false;
+      const $el = $(el);
+      const title = $el.find(".title").text().trim();
+      if (!title) return;
+      const priceText = $el.find(".price").text().trim();
+      const loc = $el.find(".location").text().trim();
+      const href = $el.find("a").attr("href") || "";
+      const idMatch = href.match(/\/(\d+)\.html/);
+
+      results.push({
+        id: idMatch ? idMatch[1] : `cl-${i}`, title,
+        price: priceText ? Number(priceText.replace(/[$,]/g, "")) || null : null,
+        location: loc, url: href, posted: "", platform: "craigslist", image: null,
+      });
+    });
+  }
 
   return results;
 }
