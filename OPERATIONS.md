@@ -14,7 +14,8 @@ ScoutAPI is a multi-platform marketplace intelligence API that scrapes Craigslis
 | Service | Provider | Purpose | Dashboard URL | Plan |
 |---------|----------|---------|---------------|------|
 | Hosting | Vercel | Website + API hosting | https://vercel.com/sergio4156-8116s-projects/scout-api | Pro ($20/mo) |
-| Scraping | ScraperAPI | Proxy + headless Chrome | https://dashboard.scraperapi.com | Trial (5K free, then $49/mo) |
+| Scraping | ScraperAPI | Proxy + headless Chrome (CL, OU, MC) | https://dashboard.scraperapi.com | Trial (5K free, then $49/mo) |
+| Scraping | RapidAPI (UnitedAPI) | Facebook Marketplace API | https://rapidapi.com/UnitedAPI/api/facebook-marketplace1 | Free (30/mo, then $4.99/mo) |
 | Auth | Clerk | User sign-up/sign-in/sessions | https://dashboard.clerk.com | Free (dev mode) |
 | Payments | Stripe | Subscriptions + billing | https://dashboard.stripe.com | Test mode |
 | Database | Supabase | PostgreSQL (users, keys, usage) | https://supabase.com/dashboard | Free |
@@ -108,10 +109,11 @@ All 18 env vars are stored in:
 | `UPSTASH_REDIS_REST_URL` | Upstash REST API URL |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST API token |
 
-### Scraping (ScraperAPI)
+### Scraping (ScraperAPI + RapidAPI)
 | Variable | Description |
 |----------|-------------|
-| `SCRAPER_API_KEY` | ScraperAPI key (proxy + headless Chrome) |
+| `SCRAPER_API_KEY` | ScraperAPI key — Craigslist, OfferUp, Mercari |
+| `RAPIDAPI_KEY` | RapidAPI key — Facebook Marketplace (UnitedAPI) |
 
 ---
 
@@ -151,16 +153,15 @@ All 18 env vars are stored in:
 - **Shared module:** `lib/scrapers/browser.ts` — `fetchWithScraperAPI()` for production, `launchBrowser()` for dev
 - **Constants:** All location maps, timeouts, and error codes in `lib/constants.ts`
 
-### Facebook Status
-Facebook actively blocks scraping proxy services (returns 403). Options to fix:
-1. **RapidAPI Facebook Marketplace endpoint** (~$30/mo) — pre-built API
-2. **Bright Data Scraping Browser** ($0.09/page) — residential proxy with browser
-3. **Facebook Graph API** — if Meta grants marketplace access
+### Facebook
+Uses RapidAPI (UnitedAPI) instead of ScraperAPI because Facebook blocks proxy services.
+Returns structured JSON directly — no HTML parsing needed. Fast (~3.5s response time).
 
-### Environment Variable
+### Environment Variables
 | Variable | Description |
 |----------|-------------|
-| `SCRAPER_API_KEY` | ScraperAPI key for production scraping |
+| `SCRAPER_API_KEY` | ScraperAPI key — Craigslist, OfferUp, Mercari |
+| `RAPIDAPI_KEY` | RapidAPI key — Facebook Marketplace |
 
 ---
 
