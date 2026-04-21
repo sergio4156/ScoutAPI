@@ -256,48 +256,94 @@ for listing in data["results"]:
         </div>
       </section>
 
-      {/* Supported Platforms */}
+      {/* Platform Status */}
       <section className="mt-8 md:mt-12">
-        <h2 className="text-xl font-bold md:text-2xl">Supported Platforms</h2>
+        <h2 className="text-xl font-bold md:text-2xl">Platform Status</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left">
                 <th className="pb-2 font-semibold">Platform</th>
+                <th className="pb-2 font-semibold">Status</th>
                 <th className="pb-2 font-semibold">Coverage</th>
-                <th className="pb-2 font-semibold">Local Pickup</th>
-                <th className="pb-2 font-semibold">Shipping</th>
+                <th className="pb-2 font-semibold">Response Time</th>
                 <th className="pb-2 font-semibold">Best For</th>
               </tr>
             </thead>
             <tbody className="text-gray-600">
               <tr className="border-b">
                 <td className="py-2 font-medium">Craigslist</td>
-                <td className="py-2">Regional</td>
-                <td className="py-2">Yes</td>
-                <td className="py-2">No</td>
+                <td className="py-2 text-emerald-600 font-medium">Stable</td>
+                <td className="py-2">Regional (all 50 states)</td>
+                <td className="py-2">20-30s</td>
                 <td className="py-2">Local deals, vehicles</td>
               </tr>
               <tr className="border-b">
-                <td className="py-2 font-medium">Facebook</td>
-                <td className="py-2">Regional</td>
-                <td className="py-2">Yes</td>
-                <td className="py-2">Sometimes</td>
+                <td className="py-2 font-medium">Facebook Marketplace</td>
+                <td className="py-2 text-emerald-600 font-medium">Stable</td>
+                <td className="py-2">Regional (major metros)</td>
+                <td className="py-2">5-10s</td>
                 <td className="py-2">General marketplace</td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 font-medium">OfferUp</td>
+                <td className="py-2 text-emerald-600 font-medium">Stable</td>
                 <td className="py-2">National</td>
-                <td className="py-2">Yes</td>
-                <td className="py-2">Yes</td>
+                <td className="py-2">20-30s</td>
                 <td className="py-2">Mobile-first buyers</td>
               </tr>
               <tr className="border-b">
                 <td className="py-2 font-medium">Mercari</td>
-                <td className="py-2">National</td>
+                <td className="py-2 text-amber-600 font-medium">Beta</td>
+                <td className="py-2">National (ships only)</td>
+                <td className="py-2">20-30s</td>
+                <td className="py-2">Shipped goods, collectibles</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-gray-400">
+          Scraping is inherently variable. If a platform returns 0 results, retry with a different query or check <a href="/api/health" className="text-blue-600 hover:underline">/api/health</a> for current status.
+        </p>
+      </section>
+
+      {/* Supported Platforms */}
+      <section className="mt-8 md:mt-12">
+        <h2 className="text-xl font-bold md:text-2xl">Platform Details</h2>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left">
+                <th className="pb-2 font-semibold">Platform</th>
+                <th className="pb-2 font-semibold">Local Pickup</th>
+                <th className="pb-2 font-semibold">Shipping</th>
+                <th className="pb-2 font-semibold">Location Format</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-600">
+              <tr className="border-b">
+                <td className="py-2 font-medium">Craigslist</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">No</td>
+                <td className="py-2 font-mono text-xs">sfbay, newyork, losangeles</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 font-medium">Facebook</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">Sometimes</td>
+                <td className="py-2 font-mono text-xs">sfbay, newyork, losangeles</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 font-medium">OfferUp</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2">Yes</td>
+                <td className="py-2 font-mono text-xs">sfbay, newyork, losangeles</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 font-medium">Mercari</td>
                 <td className="py-2">No</td>
                 <td className="py-2">Yes</td>
-                <td className="py-2">Shipped goods, collectibles</td>
+                <td className="py-2 text-xs text-gray-400">Not required (national)</td>
               </tr>
             </tbody>
           </table>
