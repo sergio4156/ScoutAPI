@@ -21,6 +21,7 @@ ScoutAPI is a multi-platform marketplace intelligence API that scrapes Craigslis
 | Database | Supabase | PostgreSQL (users, keys, usage) | https://supabase.com/dashboard | Free |
 | Cache | Upstash | Redis (scrape result caching) | https://console.upstash.com | Free |
 | Domain | Namecheap | scoutapi.io domain registration | https://www.namecheap.com/myaccount | Paid ($34.98) |
+| Monitoring | UptimeRobot | Uptime monitoring (5 min checks) | https://dashboard.uptimerobot.com | Free |
 | DNS | Namecheap | A record + CNAME → Vercel | https://ap.www.namecheap.com/Domains/DomainControlPanel/scoutapi.io/advancedns | — |
 
 ---
