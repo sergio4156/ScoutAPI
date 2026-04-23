@@ -86,10 +86,21 @@ All 18 env vars are stored in:
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/dashboard` |
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | `/dashboard` |
 
+### Subscription Plans
+
+| Plan | Price | Monthly Limit | Rate Limit | Credit Card |
+|------|-------|---------------|------------|-------------|
+| Free | $0/mo | 200 calls | 10 req/min | Not required |
+| Starter | $49/mo | 10,000 calls | 100 req/min | Required |
+| Agent | $149/mo | 100,000 calls | 100 req/min | Required |
+| Enterprise | $499/mo | 500,000 calls | 100 req/min | Required |
+
+Free tier is auto-assigned on sign-up. API key generated on first dashboard visit.
+
 ### Stripe (Payments)
 | Variable | Description |
 |----------|-------------|
-| `STRIPE_SECRET_KEY` | Server-side Stripe key (sk_test_...) |
+| `STRIPE_SECRET_KEY` | Server-side Stripe key (sk_live_...) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client-side Stripe key (pk_test_...) |
 | `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (whsec_...) |
 | `STRIPE_PRICE_STARTER` | Price ID for $49/mo Starter plan |
