@@ -126,24 +126,22 @@ describe("POST /api/scrape", () => {
       expect(res.status).toBe(401);
     });
 
-    it("returns 403 when subscription is not active", async () => {
+    it("allows free tier when subscription is not active", async () => {
       const userNoSub = { ...mockUser, subscription: { ...mockUser.subscription, status: "canceled" } };
       mockPrisma.apiKey.findUnique.mockResolvedValue({ ...mockApiKeyRecord, user: userNoSub });
       const req = makeRequest(validBody, VALID_KEY);
       const res = await POST(req);
-      const data = await res.json();
 
-      expect(res.status).toBe(403);
-      expect(data.error.code).toBe("FORBIDDEN");
+      expect(res.status).toBe(200);
     });
 
-    it("returns 403 when subscription is missing", async () => {
+    it("allows free tier when subscription is missing", async () => {
       const userNoSub = { ...mockUser, subscription: null };
       mockPrisma.apiKey.findUnique.mockResolvedValue({ ...mockApiKeyRecord, user: userNoSub });
       const req = makeRequest(validBody, VALID_KEY);
       const res = await POST(req);
 
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(200);
     });
   });
 

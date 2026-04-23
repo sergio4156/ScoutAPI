@@ -39,14 +39,14 @@ describe("PricingTable Component", () => {
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
 
-  it("renders 3 buttons", () => {
+  it("renders 4 buttons", () => {
     const buttons = screen.getAllByRole("button");
-    expect(buttons).toHaveLength(3);
+    expect(buttons).toHaveLength(4);
   });
 
-  it("shows 'Get Started' when user is not signed in", () => {
-    const buttons = screen.getAllByText("Get Started");
-    expect(buttons.length).toBe(3);
+  it("shows free tier option", () => {
+    expect(screen.getAllByText("Free").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("200 API calls")).toBeInTheDocument();
   });
 
   it("displays plan taglines", () => {
@@ -55,9 +55,9 @@ describe("PricingTable Component", () => {
     expect(screen.getByText(/high-volume automation/)).toBeInTheDocument();
   });
 
-  it("shows excluded features for Starter plan", () => {
-    expect(screen.getByText("Webhooks")).toBeInTheDocument();
-    expect(screen.getByText("Priority support")).toBeInTheDocument();
+  it("shows excluded features", () => {
+    const webhooks = screen.getAllByText("Webhooks");
+    expect(webhooks.length).toBeGreaterThanOrEqual(1);
   });
 });
 

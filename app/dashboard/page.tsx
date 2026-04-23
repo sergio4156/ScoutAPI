@@ -2,6 +2,8 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { generateApiKey } from "@/lib/apiKey";
+import { FREE_PLAN } from "@/lib/constants";
 import SignOutButton from "@/components/SignOutButton";
 import ApiKeyDisplay from "@/components/ApiKeyDisplay";
 import ManageSubscription from "@/components/ManageSubscription";
@@ -24,6 +26,15 @@ export default async function DashboardPage() {
     create: { clerkId, email },
   });
 
+  // Auto-generate API key for new users (free tier)
+  const existingKeys = await prisma.apiKey.findMany({
+    where: { userId: user.id, active: true },
+  });
+  if (existingKeys.length === 0) {
+    const { hashed } = generateApiKey();
+    await prisma.apiKey.create({ data: { key: hashed, userId: user.id } });
+  }
+
   const [subscription, apiKeys, usage, recentRequests] = await Promise.all([
     prisma.subscription.findUnique({ where: { userId: user.id } }),
     prisma.apiKey.findMany({
@@ -41,8 +52,8 @@ export default async function DashboardPage() {
   ]);
 
   const isActive = subscription?.status === "active";
-  const planName = subscription?.plan ?? "Free";
-  const planLimit = usage?.limit ?? 10_000;
+  const planName = isActive ? subscription!.plan : "free";
+  const planLimit = isActive ? (usage?.limit ?? 10_000) : FREE_PLAN.limit;
   const requestCount = usage?.requestCount ?? 0;
   const usagePercent = Math.min((requestCount / planLimit) * 100, 100);
 
@@ -87,13 +98,9 @@ export default async function DashboardPage() {
             </h2>
             {apiKeys.length > 0 ? (
               <ApiKeyDisplay keyPreview={`sk_live_...${apiKeys[0].id.slice(-6)}`} />
-            ) : isActive ? (
-              <p className="mt-4 rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">
-                Your API key was generated at checkout. Check your email or contact support.
-              </p>
             ) : (
               <p className="mt-4 rounded-lg bg-gray-100 px-3 py-3 text-center text-sm text-gray-500">
-                Subscribe to a plan to get your API key
+                Generating your API key...
               </p>
             )}
           </div>
@@ -122,9 +129,14 @@ export default async function DashboardPage() {
                 </p>
               )}
               <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
-                <span>Rate limit: 100 req/min</span>
+                <span>Rate limit: {isActive ? "100" : "10"} req/min</span>
                 <span>Cache: 15 min TTL</span>
               </div>
+              {!isActive && usagePercent >= 50 && (
+                <Link href="/#pricing" className="mt-2 block text-xs text-amber-600 hover:underline">
+                  Upgrade for 10,000+ calls/month and faster rate limits
+                </Link>
+              )}
             </div>
           </div>
 
@@ -138,7 +150,7 @@ export default async function DashboardPage() {
               <div className="text-sm text-gray-500">
                 {isActive
                   ? `Renews ${new Date(subscription!.currentPeriodEnd).toLocaleDateString()}`
-                  : "No active subscription"}
+                  : `${FREE_PLAN.limit} calls/month — no credit card required`}
               </div>
               {isActive ? (
                 <ManageSubscription />

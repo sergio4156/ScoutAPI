@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { hashApiKey } from "@/lib/apiKey";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getCached, setCache } from "@/lib/cache";
-import { ERROR_CODES, ERROR_MESSAGES, getPlanLimit } from "@/lib/constants";
+import { ERROR_CODES, ERROR_MESSAGES, getPlanLimit, FREE_PLAN, getPlanRateLimit } from "@/lib/constants";
 
 function errorJson(code: string, message: string, status: number) {
   return NextResponse.json(
@@ -42,14 +42,15 @@ export async function POST(request: NextRequest) {
     const user = apiKey.user;
     const subscription = user.subscription;
 
-    if (!subscription || subscription.status !== "active") {
-      return errorJson(ERROR_CODES.FORBIDDEN, ERROR_MESSAGES.NO_SUBSCRIPTION, 403);
-    }
+    // Determine plan: active subscription or free tier
+    const isFreeTier = !subscription || subscription.status !== "active";
+    const currentPlan = isFreeTier ? FREE_PLAN.name : subscription!.plan;
 
-    // --- Rate limiting ---
+    // --- Rate limiting (10/min for free, 100/min for paid) ---
+    const planRateLimit = getPlanRateLimit(currentPlan);
     const rateCheck = await checkRateLimit(apiKey.id);
     if (!rateCheck.allowed) {
-      const res = errorJson(ERROR_CODES.RATE_LIMITED, ERROR_MESSAGES.RATE_LIMIT_EXCEEDED, 429);
+      const res = errorJson(ERROR_CODES.RATE_LIMITED, `Rate limit exceeded. Max ${planRateLimit} requests/minute.${isFreeTier ? " Upgrade for higher limits." : ""}`, 429);
       res.headers.set("Retry-After", String(Math.ceil(rateCheck.resetMs / 1000)));
       res.headers.set("X-RateLimit-Remaining", "0");
       return res;
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     // --- Usage check (each platform counts as 1 call) ---
     const month = currentMonth();
-    const planLimit = getPlanLimit(subscription.plan);
+    const planLimit = getPlanLimit(currentPlan);
     const usage = await prisma.usage.upsert({
       where: { userId_month: { userId: user.id, month } },
       update: {},

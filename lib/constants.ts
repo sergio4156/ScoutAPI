@@ -91,14 +91,25 @@ export const SCRAPER = {
 
 // --- Subscription Plans ---
 
-export const PLANS: Record<string, { name: string; limit: number }> = {
+export const FREE_PLAN = {
+  name: "free",
+  limit: 200,
+  rateLimit: 10, // requests per minute
+};
+
+export const PLANS: Record<string, { name: string; limit: number; rateLimit?: number }> = {
+  free: { name: "free", limit: 200, rateLimit: 10 },
   starter: { name: "starter", limit: 10_000 },
   agent: { name: "agent", limit: 100_000 },
   enterprise: { name: "enterprise", limit: 500_000 },
 };
 
 export function getPlanLimit(plan: string): number {
-  return PLANS[plan]?.limit ?? PLANS.starter.limit;
+  return PLANS[plan]?.limit ?? FREE_PLAN.limit;
+}
+
+export function getPlanRateLimit(plan: string): number {
+  return PLANS[plan]?.rateLimit ?? RATE_LIMIT.MAX_REQUESTS_PER_MINUTE;
 }
 
 // --- Error Codes ---

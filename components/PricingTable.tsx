@@ -6,6 +6,25 @@ import { useState } from "react";
 
 const plans = [
   {
+    name: "Free",
+    tagline: "Try ScoutAPI — no credit card required",
+    price: 0,
+    calls: "200",
+    priceEnv: "",
+    features: [
+      "200 API calls/month",
+      "All 4 platforms",
+      "All 50 US states",
+      "10 requests/minute",
+      "15-minute data caching",
+    ],
+    excluded: ["Webhooks", "Priority support"],
+    highlighted: false,
+    cta: "Start Free",
+    btnClass: "bg-emerald-500 text-white hover:bg-emerald-600",
+    isFree: true,
+  },
+  {
     name: "Starter",
     tagline: "Perfect for testing and small-scale automation",
     price: 49,
@@ -120,7 +139,7 @@ export default function PricingTable() {
           per-platform charges.
         </p>
 
-        <div className="mt-10 grid gap-6 md:mt-14 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 md:mt-14 md:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -141,9 +160,9 @@ export default function PricingTable() {
               <p className="mt-1 text-xs text-gray-400">{plan.tagline}</p>
               <div className="mt-4 flex items-baseline gap-1">
                 <span className="text-3xl font-extrabold text-gray-900 md:text-4xl">
-                  ${plan.price}
+                  {plan.price === 0 ? "Free" : `$${plan.price}`}
                 </span>
-                <span className="text-gray-400">/mo</span>
+                {plan.price > 0 && <span className="text-gray-400">/mo</span>}
               </div>
               <p className="mt-1 text-sm text-gray-400">
                 {plan.calls} API calls
@@ -167,7 +186,7 @@ export default function PricingTable() {
                 ))}
               </ul>
               <button
-                onClick={() => handleSubscribe(plan.priceEnv)}
+                onClick={() => (plan as { isFree?: boolean }).isFree ? router.push("/sign-up") : handleSubscribe(plan.priceEnv)}
                 disabled={loading === plan.priceEnv}
                 className={`mt-8 w-full rounded-lg py-3 text-sm font-semibold transition disabled:opacity-50 ${plan.btnClass}`}
               >
